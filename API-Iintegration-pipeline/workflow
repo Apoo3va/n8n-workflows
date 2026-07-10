@@ -1,0 +1,622 @@
+{
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        96
+      ],
+      "id": "e6d86ca2-e7f2-4dc9-a5f5-5f5980f51bf2",
+      "name": "TriggerManual"
+    },
+    {
+      "parameters": {
+        "url": "https://learn.app.n8n.cloud/webhook/course/n8n102/orders",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Assessment-ID",
+              "value": "351eb5323416ed9f26787bb70d4043d5"
+            }
+          ]
+        },
+        "options": {
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "page",
+                    "value": "={{ $pageCount + 1 }}"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        0
+      ],
+      "id": "5a97c7a6-267f-485f-97e6-14e2bff51248",
+      "name": "GetOrders",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GrD9QBj3adTq3nCn",
+          "name": "Header Auth account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://learn.app.n8n.cloud/webhook/course/n8n102/customers",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Assessment-ID",
+              "value": "351eb5323416ed9f26787bb70d4043d5"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        192
+      ],
+      "id": "7cb07d9d-ccd0-4ce9-95df-6a6abd28a296",
+      "name": "GetCustomers",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GrD9QBj3adTq3nCn",
+          "name": "Header Auth account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "enriched_orders",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        672,
+        -128
+      ],
+      "id": "38da3dd9-9fcc-4b0c-9605-7ddbbfbd8169",
+      "name": "AggregateOrders"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "advanced": true,
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "customer_id",
+              "field2": "customer_id"
+            }
+          ]
+        },
+        "joinMode": "enrichInput1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        448,
+        96
+      ],
+      "id": "af63297f-189c-4196-85be-bebbd673a4a1",
+      "name": "MergeOrdersCustomers"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://learn.app.n8n.cloud/webhook/course/n8n102/orders-queue",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Assessment-ID",
+              "value": "351eb5323416ed9f26787bb70d4043d5"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "assessment_id",
+              "value": "351eb5323416ed9f26787bb70d4043d5"
+            },
+            {
+              "name": "enriched_orders",
+              "value": "={{$items(\"AggregateOrders\")[0].json.enriched_orders}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        -128
+      ],
+      "id": "e45d586b-bc90-4937-af1e-80d0bc8fcbc1",
+      "name": "SendToOrdersQueue",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GrD9QBj3adTq3nCn",
+          "name": "Header Auth account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "099b7f21-538e-4d73-8f6a-51eee3a74d1a",
+              "leftValue": "={{ $json.subscription }}",
+              "rightValue": "Enterprise",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        192
+      ],
+      "id": "45c5dab9-e535-4ebc-bf7e-27899781a2fe",
+      "name": "CheckSubscriptionTier"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.region }} ",
+                    "rightValue": "=north",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "68d5075c-6b8d-4480-9b63-55d470dfb64c"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "north"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "64bad3df-566d-4c07-a1d0-85d779d03acb",
+                    "leftValue": "={{ $json.region }} ",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "south"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f82c7a96-b3dc-4fb1-810d-3eb597d192dc",
+                    "leftValue": "={{ $json.region }} ",
+                    "rightValue": "east",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "east"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a2a0c73a-8f66-4515-8950-dbd57bb4a0cb",
+                    "leftValue": "={{ $json.region }} ",
+                    "rightValue": "west",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "west"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        256
+      ],
+      "id": "2491bd3c-7038-4bee-93f2-b845880644e9",
+      "name": "RouteByRegion"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "745c08ba-df26-4fba-9eba-a60ce683b04f",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "delivered",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        896,
+        64
+      ],
+      "id": "dc97976d-493a-41a7-89f6-d95aaa02bcf3",
+      "name": "FilterDelivered"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://learn.app.n8n.cloud/webhook/course/n8n102/priority-queue",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Assessment-ID",
+              "value": "351eb5323416ed9f26787bb70d4043d5"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "order_id",
+              "value": "={{ $json.order_id }}"
+            },
+            {
+              "name": "customer_id",
+              "value": "={{ $json.customer_id }}"
+            },
+            {
+              "name": "company_name",
+              "value": "={{ $json.customer_name }}"
+            },
+            {
+              "name": "subscription",
+              "value": "={{ $json.subscription }}"
+            },
+            {
+              "name": "assessment_id",
+              "value": "351eb5323416ed9f26787bb70d4043d5"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1328,
+        80
+      ],
+      "id": "0f710fae-3873-4392-9109-cc93a8ed4d1d",
+      "name": "SendToPriorityQueue",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Kk3l7dnBMbaxvFJj",
+          "name": "Header Auth account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 5,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1104,
+        64
+      ],
+      "id": "54ddda81-e932-403b-925d-1639c8c4140c",
+      "name": "BatchPriorityOrders"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://learn.app.n8n.cloud/webhook/course/n8n102/finalize",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Assessment-ID",
+              "value": "351eb5323416ed9f26787bb70d4043d5"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "total_orders",
+              "value": "={{ $items(\"MergeOrdersCustomers\").length }}"
+            },
+            {
+              "name": "enterprise_count",
+              "value": "={{ $items(\"FilterDelivered\").length }}"
+            },
+            {
+              "name": "batch_size",
+              "value": "={{ $('BatchPriorityOrders').params.batchSize }}"
+            },
+            {
+              "name": "retry_enabled",
+              "value": "={{ true }}"
+            },
+            {
+              "name": "error_handling_enabled",
+              "value": "={{ true }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1232,
+        -112
+      ],
+      "id": "be22456f-b7b5-4cf5-a80c-c7b17d9d6ca6",
+      "name": "HTTP Request",
+      "executeOnce": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Kk3l7dnBMbaxvFJj",
+          "name": "Header Auth account 5"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "TriggerManual": {
+      "main": [
+        [
+          {
+            "node": "GetOrders",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GetCustomers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetOrders": {
+      "main": [
+        [
+          {
+            "node": "MergeOrdersCustomers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetCustomers": {
+      "main": [
+        [
+          {
+            "node": "MergeOrdersCustomers",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "AggregateOrders": {
+      "main": [
+        [
+          {
+            "node": "SendToOrdersQueue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MergeOrdersCustomers": {
+      "main": [
+        [
+          {
+            "node": "AggregateOrders",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CheckSubscriptionTier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SendToOrdersQueue": {
+      "main": [
+        []
+      ]
+    },
+    "CheckSubscriptionTier": {
+      "main": [
+        [
+          {
+            "node": "FilterDelivered",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "RouteByRegion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FilterDelivered": {
+      "main": [
+        [
+          {
+            "node": "BatchPriorityOrders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SendToPriorityQueue": {
+      "main": [
+        [
+          {
+            "node": "BatchPriorityOrders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BatchPriorityOrders": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SendToPriorityQueue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "c4bb5e99a0afd3821b75dad9dbcf50644e10eb52864849817d666ae95aca2b1d"
+  }
+}
