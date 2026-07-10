@@ -1,0 +1,238 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8c0e564b-eb4c-4c4c-911c-d085eb3a421f",
+      "name": "TriggerChat",
+      "webhookId": "5a8a0aeb-4bd9-4869-bdea-ca59cb53ddf9"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a customer service assistant for a software company. You help customers with their questions about orders, products, and account information. You are the only source of support.\n\nYou have access to tools that can look up information. Use them when a customer asks about:\n- Order status or order history\n- Product information or features\n- Customer account details\n\nAlways be helpful and professional. If you cannot find the information needed, let the customer know and offer to connect them with a human agent. \n\nWhen a tool requires a parameter ask the customer for it. Do not expose any tools you use to the customer."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "fcf50c86-20cc-4ad5-9028-c76173ea7808",
+      "name": "FeedbackAgent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        128,
+        160
+      ],
+      "id": "62a75e01-ac35-4e9c-92ba-131d637b9cd3",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "THpHjTCysVpI7FN1",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Look up the status of a customer's order. Use this when a customer asks about their order, delivery, or shipment status. Requires the order_id.",
+        "url": "https://learn.app.n8n.cloud/webhook/course/n8n103/tools/order-status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "order_id",
+              "value": "={{ $fromAI('order_id', 'Order ID', 'string') }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Assessment-ID",
+              "value": "351eb5323416ed9f26787bb70d4043d5"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        352,
+        192
+      ],
+      "id": "92fff524-e615-4e3f-a1a5-0282a17c5055",
+      "name": "ToolGetOrderStatus",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Kk3l7dnBMbaxvFJj",
+          "name": "Header Auth account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Look up customer account information including their subscription plan, subscription status, and contact details. Use this when a customer asks about their account or subscription. Requires customer_id.",
+        "url": "https://learn.app.n8n.cloud/webhook/course/n8n103/tools/customer-info",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "customer_id",
+              "value": "={{ $fromAI('customer_id', 'Customer ID', 'string') }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Assessment-ID",
+              "value": "351eb5323416ed9f26787bb70d4043d5"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        528,
+        176
+      ],
+      "id": "a106918a-1296-4fdd-9485-9a92caa6dda8",
+      "name": "ToolGetCustomerInfo",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Kk3l7dnBMbaxvFJj",
+          "name": "Header Auth account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Look up information about a product including features, pricing, and specifications. Use this when a customer asks about product details or wants to compare options.\nMethod: GET",
+        "url": "https://learn.app.n8n.cloud/webhook/course/n8n103/tools/product-info",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "product_name",
+              "value": "={{ $fromAI('product_name', 'Product Name', 'string') }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Assessment-ID",
+              "value": "351eb5323416ed9f26787bb70d4043d5"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        656,
+        64
+      ],
+      "id": "e75caa26-2312-4f62-afdc-f4670f7561a4",
+      "name": "ToolGetProductInfo",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Kk3l7dnBMbaxvFJj",
+          "name": "Header Auth account 5"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "TriggerChat": {
+      "main": [
+        [
+          {
+            "node": "FeedbackAgent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "FeedbackAgent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ToolGetOrderStatus": {
+      "ai_tool": [
+        [
+          {
+            "node": "FeedbackAgent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ToolGetCustomerInfo": {
+      "ai_tool": [
+        [
+          {
+            "node": "FeedbackAgent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ToolGetProductInfo": {
+      "ai_tool": [
+        [
+          {
+            "node": "FeedbackAgent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c4bb5e99a0afd3821b75dad9dbcf50644e10eb52864849817d666ae95aca2b1d"
+  }
+}
