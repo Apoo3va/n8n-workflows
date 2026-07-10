@@ -1,0 +1,79 @@
+# ==============================
+# n8n specific
+# ==============================
+.n8n/
+n8n.log
+n8n-*.log
+.n8n_backup/
+*.n8n-backup
+
+# ==============================
+# Secrets / credentials / env
+# ==============================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*credentials*.json
+config.local.json
+
+# ==============================
+# Node / npm (if any helper scripts are used)
+# ==============================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+.pnp/
+.pnp.js
+
+# ==============================
+# Python (if any helper/export scripts are used)
+# ==============================
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
+*.egg-info/
+
+# ==============================
+# OS files
+# ==============================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==============================
+# Editor / IDE
+# ==============================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ==============================
+# Logs & temp files
+# ==============================
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+*.bak
+
+# ==============================
+# Archives / exports you don't want tracked
+# ==============================
+*.zip
+*.tar.gz
+
+# ==============================
+# Misc
+# ==============================
+.DS_Store?
+*.orig
