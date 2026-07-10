@@ -1,0 +1,183 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9bfcc134-1a63-4fcf-9efc-41c9894ef011",
+      "name": "When chat message received",
+      "webhookId": "aced83c0-12be-41b4-b038-cfcf9007dd99"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a customer service agent. You have access to a customer database and an order database.\n\nWhen asked about customers, use the GetCustomers tool to look up their information.\nWhen asked about orders, prices, employees, or product categories, use the GetOrderData tool.\n\nBe concise and helpful. If the data does not contain what the user is asking for, say so. Do not make up information."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "305b4eae-b914-4f28-9cd2-e5972e9f8ebd",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "AAEBpQfLSUCLu3bM",
+          "mode": "list",
+          "cachedResultName": "customers",
+          "cachedResultUrl": "/projects/CtRzYUT3Vobi7eTl/datatables/AAEBpQfLSUCLu3bM"
+        }
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        544,
+        208
+      ],
+      "id": "7c080813-6ee1-428f-9dd5-802479d216ad",
+      "name": "GetCustomers"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Retrieve order details including order prices, quantities, product categories, employee assignments, and order statuses for all customers",
+        "url": "https://learn.app.n8n.cloud/webhook/courses/n8n-quickstart/order-tool",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-assessment-id",
+              "value": "351eb5323416ed9f26787bb70d4043d5"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        272
+      ],
+      "id": "14677367-c3cc-4c5c-a504-f24103f1459f",
+      "name": "GetOrderData",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "k0EbegVI9GPPJkcS",
+          "name": "Header Auth account 3"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        304,
+        288
+      ],
+      "id": "ef601f41-01a1-413e-97df-779b01c626d1",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        144,
+        240
+      ],
+      "id": "00e32a33-3660-4c1f-969a-5c4e350ac220",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "I66pF8u3mVcEAQXh",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetCustomers": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetOrderData": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c4bb5e99a0afd3821b75dad9dbcf50644e10eb52864849817d666ae95aca2b1d"
+  }
+}
